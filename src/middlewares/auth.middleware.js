@@ -6,7 +6,6 @@ export function authMiddleware(req, res, next) {
 
   if (!authHeader || !accessToken) {
     res.status(401).json({ message: 'Token is required' });
-
     return;
   }
 

@@ -9,20 +9,21 @@ import { useAuth } from './context/authContext'
 import Registration from './pages/Registration'
 import ActivationPage from './pages/ActivationPage'
 import Profile from './pages/Profile'
+import { Suspense } from 'react'
 
 function App() {
-const {auth} = useAuth();
   return (
+
     <Routes>
       <Route path='/' element={<Layout/>}>
         <Route index element={<Home/>}/>
         <Route path='login' element={<Login/>}/>
         <Route path='logup' element={<Registration/>}/>
         <Route path='activate/:email/:token' element={<ActivationPage/>}/>
-        <Route path='users' element={<PrivateRoute isLoggedIn={auth.isAuthenticated}>
+        <Route path='users' element={<PrivateRoute>
           <Users/>
         </PrivateRoute>}/>
-        <Route path='profile' element={<PrivateRoute isLoggedIn={auth.isAuthenticated}>
+        <Route path='profile' element={<PrivateRoute>
           <Profile/>
         </PrivateRoute>}/>
       </Route>

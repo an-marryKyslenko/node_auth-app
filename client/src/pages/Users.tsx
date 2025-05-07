@@ -1,21 +1,63 @@
-import React, { useEffect } from 'react'
-import { useUsers } from '../context/usersContext'
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '../api/fetchAuth';
+import { useAuth } from '../context/authContext';
+import { User } from '../types/User';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 const Users = () => {
-  const {users, getUsers} = useUsers();
+  const {accessToken, setAccessToken, logout} = useAuth();
+  const navigate = useNavigate();
+  const {data, isLoading, error}: UseQueryResult<User[]> = useQuery({
+    queryKey: ['users'],
+    queryFn: async (): Promise<User[]> => {
+      let response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
 
-  useEffect(() => {
-    getUsers()
-  }, [])
+      if(response.status === 401) {
+        const refreshRes = await authApi.refresh();
+
+        if(!refreshRes.ok) {
+          logout();
+          navigate('/login');
+          throw new Error('Not authenticated');
+        }
+
+        setAccessToken(refreshRes.accessToken)
+
+        response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+          headers: {
+            Authorization: `Bearer ${refreshRes.accessToken}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch after refresh');
+        }
+      }
+
+      return response.json();
+    },
+    enabled: true,
+    
+  });
+
   return (
     <main className='main'>
       <div className="container">
         <h1 className="title">Users</h1>
-        <ul>
-          {users.map(user => (
-            <li key={user.id}>{user.name}</li>
-          ))}
-        </ul>
+        {isLoading
+        ? <div>Loding...</div>
+        : !data && error
+          ? <div>{error.message}</div>
+          : <ul>
+              {data?.map(user => (
+                <li key={user.id}>{user.name}</li>
+              ))}
+            </ul>
+        }
       </div>
     </main>
   )

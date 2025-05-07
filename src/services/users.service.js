@@ -6,16 +6,23 @@ function getAllActive() {
   });
 }
 
-function getActiveUser(email) {
-  return db.user.findUnique({
+function getUser(email) {
+  return db.user.findFirst({
     where: {
       email,
-      activationToken: null,
     },
   });
 }
 
+function updateUser(email,data) {
+  return db.user.update({
+    where: {email},
+    data
+  })
+}
+
 export const usersService = {
   getAllActive,
-  getActiveUser,
+  getUser,
+  updateUser,
 };

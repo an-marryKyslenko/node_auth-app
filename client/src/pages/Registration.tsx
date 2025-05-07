@@ -1,11 +1,14 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { useAuth } from '../context/authContext'
 import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { authApi } from '../api/fetchAuth';
 
 const Registration = () => {
   const [isRegistrated, setIsRegistrated] = useState(false);
-  const {registration} = useAuth();
   const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: authApi.register
+  });
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -13,12 +16,23 @@ const Registration = () => {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    registration({
-      email: formData.get('email') as string,
-      name: formData.get('name') as string,
-      password: formData.get('password') as string
+    const email = formData.get('email') as string;
+    const name = formData.get('name') as string;
+    const password = formData.get('password') as string;
+
+    // registration({
+    //   email: formData.get('email') as string,
+    //   name: formData.get('name') as string,
+    //   password: formData.get('password') as string
+    // })
+
+    mutation.mutate({
+      email,
+      name,
+      password,
     })
 
+    console.log(mutation.data)
     setIsRegistrated(true);
     form.reset()
   }
@@ -41,10 +55,12 @@ const Registration = () => {
     <main className='main'>
       <div className="container">
         <h1 className='title'>Log up</h1>
+        {mutation.isPending && <p>Pending</p>}
+        {mutation.isSuccess && <p>Success</p>}
         <form className='box' onSubmit={submit}>
           <input type="text" className='input' name='name' placeholder='Your name...'/>
           <input type="text" className='input' name='email' placeholder='Your email...'/>
-          <input type="text" className='input' name='password' placeholder='Your password ...'/>
+          <input type="password" className='input' name='password' placeholder='Your password ...'/>
           <button className='button'>Log up</button>
           <p>If you had have already account, please, go to <a href='/login'>login page</a></p>
         </form>

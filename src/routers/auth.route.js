@@ -7,4 +7,4 @@ export const router = express.Router();
 router.post('/registration', authController.register);
 router.get('/activate/:email/:token', authController.activation);
 router.post('/login', authController.login);
-router.get('/refresh', cookieParser(), authController.refresh);
+router.post('/refresh', cookieParser(), authController.refresh);

@@ -49,7 +49,10 @@ const register = async (req, res) => {
 
   await mailer.sendActivationLink(email, activationToken);
 
-  return res.status(201).json(normalize(user));
+  return res.status(201).json({
+    user: normalize(user),
+    activationToken
+  });
 };
 
 const activation = async (req, res) => {
@@ -59,12 +62,14 @@ const activation = async (req, res) => {
   const user = await authService.getByEmail(email);
 
   if (!user || user.activationToken !== token) {
-    return res.status(404);
+    return res.status(404).json({
+      message: 'User with this email doesn\'t exist or activation token doesn\'t match!'
+    });
   }
 
   await authService.activation(email);
 
-  res.json(user);
+  res.json(normalize(user));
 };
 
 const sendAuthentication = async (res, user) => {

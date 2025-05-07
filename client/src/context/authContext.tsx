@@ -1,64 +1,42 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { NewUser, User } from '../types/User'
-import { ActivationStatus, AuthState } from '../types/Auth'
+import { createContext, useContext, useState, ReactNode, useEffect, Dispatch, SetStateAction } from 'react'
+import { User } from '../types/User'
+import { ActivationStatus} from '../types/Auth'
+import { useQuery } from '@tanstack/react-query'
+import { authApi } from '../api/fetchAuth'
 
 interface AuthContextType {
-  auth: AuthState
-  registration: (data: NewUser) => void
   activate: (email: string, token: string) => Promise<boolean>
-  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   activationStatus: ActivationStatus
   message: string
-  isLoading: boolean
   user: User | null
+  accessToken: string | null;
+  setAccessToken: (token: string | null) => void;
+  isLoading: boolean,
+  setUser: Dispatch<SetStateAction<User | null>>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const getInitialAuthState = (): AuthState => {
-  const raw = localStorage.getItem('auth');
-  return raw ? JSON.parse(raw) : { token: null, isAuthenticated: false };
-};
-
 export const AuthProvider = ({ children }: {children: ReactNode}) => {
-  const [auth, setAuth] = useState<AuthState>(getInitialAuthState);
   const [activationStatus, setActivationStatus] = useState<ActivationStatus>('idle');
-  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const { data, isLoading } = useQuery({
+    queryKey: ['refresh'],
+    queryFn: authApi.refresh,
+    staleTime: 1000 * 60 * 10,
+  });
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const registration = async ({email,password,name}: NewUser) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/registration`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email, password, name})
-      })
-
-      if(!response.ok) {
-        const error = await response.json();
-
-        throw new Error(error.message || 'Unknown error!')
-      }
-
-      const  result = await response.json();
-
-      localStorage.setItem('activationToken', result.activationToken);
-      setMessage('Success!')
-
-    } catch (error) {
-      if (error instanceof Error) {
-        setMessage(error.message);
-      } else {
-        setMessage('Unknown error!');
-      }
-    } finally{
-      setTimeout(() => {
-        setMessage('')
-      }, 3000)
+  useEffect(() => {
+    if(data?.user) {
+      setUser(data.user)
     }
-  }
+    if (data?.accessToken) {
+      setAccessToken(data.accessToken);
+    }
+  }, [data]);
 
   const activate = async (email:string, token: string): Promise<boolean> => {
     setActivationStatus('loading')
@@ -66,9 +44,8 @@ export const AuthProvider = ({ children }: {children: ReactNode}) => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/activate/${email}/${encodeURIComponent(token)}`);
       if (!response.ok) throw new Error('Activation failed');
 
-      const result = await response.json();
+      await response.json();
 
-      setUser(result)
       setActivationStatus('success');
       localStorage.removeItem('activationToken')
 
@@ -80,61 +57,21 @@ export const AuthProvider = ({ children }: {children: ReactNode}) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email, password})
-      })
-
-      if(!response.ok) {
-        const error: {message: string} = await response.json();
-        throw new Error(error.message || '')
-      }
-
-      const result = await response.json();
-      localStorage.setItem('auth', JSON.stringify({
-        token: result.accessToken,
-        isAuthenticated: true
-      }))
-
-      setUser(result.user)
-      setAuth(getInitialAuthState);
-      setIsLoading(false);
-      setMessage('Success!')
-
-      return true
-    } catch (error) {
-      if (error instanceof Error) {
-        setMessage(error.message);
-      } else {
-        setMessage('Unknown error!');
-      }
-      return false
-    }finally{
-      setTimeout(() => {
-        setMessage('')
-      }, 3000)
-    }
-  }
-
   const logout = () => {
-    localStorage.removeItem('auth');
-    setAuth({token:null, isAuthenticated: false})
+    setAccessToken(null)
+    setUser(null)
   }
   return (
     <AuthContext.Provider value={{
-      auth,
-      registration,
       logout,
       activate,
-      login,
       activationStatus,
       message,
       isLoading,
-      user
+      user,
+      setUser,
+      accessToken,
+      setAccessToken,
     }}>
       {children}
     </AuthContext.Provider>

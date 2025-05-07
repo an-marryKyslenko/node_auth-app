@@ -1,4 +1,4 @@
-import React, { useEffect} from 'react'
+import { useEffect} from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
 
@@ -12,11 +12,9 @@ const ActivationPage = () => {
     if(!email || !token) return;
 
     const activateUser = async () => {
-        const isSuccess = await activate(email, token);
-
-        if(isSuccess) {
-          navigate('/profile')
-        }
+      await activate(email, token).then(() => {
+        navigate('/profile')
+      });
     }
     activateUser()
   }, [email,token]);

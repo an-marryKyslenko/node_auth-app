@@ -5,16 +5,23 @@ import App from './App.tsx'
 import 'bulma/css/bulma.css';
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/authContext.tsx'
-import { UsersProvider} from './context/usersContext.tsx'
+
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <UsersProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <BrowserRouter>
           <App />
         </BrowserRouter>
-      </UsersProvider>
-    </AuthProvider>
+      </AuthProvider>
+
+    </QueryClientProvider>
   </StrictMode>,
 )

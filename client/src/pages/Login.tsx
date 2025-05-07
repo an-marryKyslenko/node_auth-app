@@ -2,10 +2,15 @@ import React, { FormEvent } from 'react'
 import { useAuth } from '../context/authContext'
 import { useNavigate } from 'react-router-dom';
 import Notification from '../components/Notification';
+import { useMutation } from '@tanstack/react-query';
+import { authApi } from '../api/fetchAuth';
 
 const Login = () => {
-  const {login} = useAuth();
+  const {setAccessToken} = useAuth();
   const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: authApi.login
+  })
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -16,9 +21,11 @@ const Login = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const isSuccess = await login(email, password);
+    mutation.mutate({email, password})
+    // const isSuccess = await login(email, password);
 
-    if(isSuccess) {
+    if(mutation.isSuccess) {
+      setAccessToken(mutation.data.accessToken);
       navigate('/profile')
     }
     form.reset()
@@ -30,7 +37,7 @@ const Login = () => {
         <h1 className='title'>Log in</h1>
         <form className='box' onSubmit={submit}>
           <input type="text" className='input' name='email' placeholder='Your email...'/>
-          <input type="text" className='input' name='password' placeholder='Your password...'/>
+          <input type="password" className='input' name='password' placeholder='Your password...'/>
           <button className='button'>Log in</button>
           <p>If you had have already account, please, go to <a href='/logup'>log up page</a></p>
         </form>

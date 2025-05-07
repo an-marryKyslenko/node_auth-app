@@ -1,6 +1,7 @@
-export type AuthState = {
-  token: string | null,
-  isAuthenticated: boolean
-}
-
 export type ActivationStatus = 'idle' | 'loading' | 'success' | 'error';
+
+export type ApiResponse<T> = {
+  data: T;
+  error?: string;
+  isLoading?: boolean
+};

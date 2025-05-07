@@ -1,12 +1,14 @@
 import { Navigate } from 'react-router-dom'
+import { useAuth } from '../context/authContext';
 
-type Props = {
-  children: React.ReactNode,
-  isLoggedIn: boolean
+const PrivateRoute = ({ children}: {children : React.ReactNode}) => {
+  const {isLoading, accessToken} = useAuth()
+
+  if(isLoading) {
+    return <div>Loading...</div>
+  }
+
+  return <>{children}</>
 }
 
-const PrivateRoute = ({ children, isLoggedIn }: Props) => {
-  return isLoggedIn ? children : <Navigate to="/login" />
-}
-
-export default PrivateRoute
+export default PrivateRoute;

@@ -3,7 +3,8 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
 
 const Header = () => {
-  const {auth, logout} = useAuth();
+  const {accessToken, logout} = useAuth();
+
 
   return (
     <header className='header'>
@@ -12,7 +13,7 @@ const Header = () => {
         <NavLink className="link" to="users">Users</NavLink>
         <NavLink className="link" to="profile">Profile</NavLink>
       </nav>
-      {auth.isAuthenticated
+      {accessToken
         ? <Link to="login" onClick={logout} className='button is-danger'>Log out</Link>
         : <Link to="login" className='button is-primary'>Log in</Link>
       }
