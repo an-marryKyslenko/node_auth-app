@@ -18,10 +18,13 @@ const Profile = () => {
   const {user, accessToken, setUser, logout} = useAuth();
   const navigate = useNavigate();
 
-  if(!user || !accessToken) {
-    navigate('/login')
-    logout()
-  }
+  useEffect(() => {
+    if(!user || !accessToken) {
+      navigate('/login')
+      logout()
+    }
+  }, [user, accessToken])
+
   const mutation = useMutation({
     mutationFn: usersApi.updateUser,
     onSuccess: (data) => {
@@ -59,11 +62,7 @@ const Profile = () => {
 
   const deleteUser = async () => {
     if(user) {
-      const response = await usersApi.deleteUser(user.email)
-
-      if(!response.ok) {
-        throw new Error('Error is happened :(((')
-      }
+      await usersApi.deleteUser(user.email)
 
       logout()
       navigate('/login')

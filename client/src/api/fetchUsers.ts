@@ -1,14 +1,4 @@
-import { User } from "../types/User";
 import { authApi } from "./fetchAuth";
-
-const row = localStorage.getItem('token')
-const token = row
-const email = row ? JSON.parse(row).email : '';
-
-type UserWithActive = {
-  user: User,
-  isActive: boolean
-}
 
 type UpdateUserPayload = {
   email: string;
@@ -19,20 +9,20 @@ type UpdateUserPayload = {
   accessToken: string | null
 };
 
-const getUser = async (): Promise<UserWithActive> => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${email}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+// const getUser = async (): Promise<UserWithActive> => {
+//   const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${email}`, {
+//     headers: {
+//       Authorization: `Bearer ${token}`
+//     }
+//   });
 
-  if(!res.ok) {
-    throw new Error('User not found');
-  }
-  const data = await res.json();
+//   if(!res.ok) {
+//     throw new Error('User not found');
+//   }
+//   const data = await res.json();
 
-  return data;
-}
+//   return data;
+// }
 
 const updateUser = async ({email, data, accessToken}: UpdateUserPayload) => {
   let response = await fetch(`${import.meta.env.VITE_API_URL}/users/${email}`, {
@@ -45,13 +35,11 @@ const updateUser = async ({email, data, accessToken}: UpdateUserPayload) => {
   })
 
   if(response.status === 401) {
-    const refreshRes = await authApi.refresh();
+    const {accessToken} = await authApi.refresh();
 
-    if(!refreshRes.ok) {
+    if(!accessToken) {
       throw new Error('Not authenticated');
     }
-
-    const {accessToken} = await refreshRes.json();
 
     response = await fetch(`${import.meta.env.VITE_API_URL}/users/${email}`, {
       method: "PATCH",
@@ -82,7 +70,6 @@ const deleteUser = async (email: string): Promise<any> => {
 }
 
 export const usersApi = {
-  getUser,
   updateUser,
   deleteUser,
 }

@@ -7,7 +7,10 @@ const Registration = () => {
   const [isRegistrated, setIsRegistrated] = useState(false);
   const navigate = useNavigate();
   const mutation = useMutation({
-    mutationFn: authApi.register
+    mutationFn: authApi.register,
+    onSuccess: () => {
+      setIsRegistrated(true);
+    }
   });
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
@@ -18,13 +21,7 @@ const Registration = () => {
 
     const email = formData.get('email') as string;
     const name = formData.get('name') as string;
-    const password = formData.get('password') as string;
-
-    // registration({
-    //   email: formData.get('email') as string,
-    //   name: formData.get('name') as string,
-    //   password: formData.get('password') as string
-    // })
+    const password = formData.get('password') as string
 
     mutation.mutate({
       email,
@@ -32,8 +29,6 @@ const Registration = () => {
       password,
     })
 
-    console.log(mutation.data)
-    setIsRegistrated(true);
     form.reset()
   }
 

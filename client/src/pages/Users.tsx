@@ -19,7 +19,7 @@ const Users = () => {
       if(response.status === 401) {
         const refreshRes = await authApi.refresh();
 
-        if(!refreshRes.ok) {
+        if(!refreshRes.accessToken) {
           logout();
           navigate('/login');
           throw new Error('Not authenticated');
@@ -40,8 +40,6 @@ const Users = () => {
 
       return response.json();
     },
-    enabled: true,
-    
   });
 
   return (

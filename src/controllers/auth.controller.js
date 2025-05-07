@@ -51,7 +51,7 @@ const register = async (req, res) => {
 
   return res.status(201).json({
     user: normalize(user),
-    activationToken
+    activationToken,
   });
 };
 
@@ -63,7 +63,8 @@ const activation = async (req, res) => {
 
   if (!user || user.activationToken !== token) {
     return res.status(404).json({
-      message: 'User with this email doesn\'t exist or activation token doesn\'t match!'
+      message:
+        "User with this email doesn't exist or activation token doesn't match!",
     });
   }
 

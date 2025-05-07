@@ -14,11 +14,11 @@ function getUser(email) {
   });
 }
 
-function updateUser(email,data) {
+function updateUser(email, data) {
   return db.user.update({
-    where: {email},
-    data
-  })
+    where: { email },
+    data,
+  });
 }
 
 export const usersService = {

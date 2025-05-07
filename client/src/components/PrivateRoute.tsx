@@ -8,7 +8,7 @@ const PrivateRoute = ({ children}: {children : React.ReactNode}) => {
     return <div>Loading...</div>
   }
 
-  return <>{children}</>
+  return accessToken ? children : <Navigate to='/login'/>
 }
 
 export default PrivateRoute;

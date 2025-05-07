@@ -9,7 +9,11 @@ const Login = () => {
   const {setAccessToken} = useAuth();
   const navigate = useNavigate();
   const mutation = useMutation({
-    mutationFn: authApi.login
+    mutationFn: authApi.login,
+    onSuccess: (data) => {
+      setAccessToken(data.accessToken);
+      navigate('/profile')
+    }
   })
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
@@ -22,12 +26,7 @@ const Login = () => {
     const password = formData.get('password') as string;
 
     mutation.mutate({email, password})
-    // const isSuccess = await login(email, password);
 
-    if(mutation.isSuccess) {
-      setAccessToken(mutation.data.accessToken);
-      navigate('/profile')
-    }
     form.reset()
   }
 
